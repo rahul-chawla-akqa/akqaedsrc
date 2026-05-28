@@ -1,0 +1,11 @@
+
+{
+    "mappings": [
+      "/content/akqaedsrc/:/",
+      "/content/akqaedsrc/configuration:/.helix/config.json"
+    ],
+    "includes": [
+      "/content/akqaedsrc/",
+      "/content/dam/akqaedsrc/"
+    ]
+  }
