@@ -57,6 +57,23 @@ async function loadFonts() {
   }
 }
 
+function decorateCustomMetadata(doc) {
+  doc.head.querySelectorAll('meta[name="customMetadata"]').forEach((source) => {
+    const separatorIndex = source.content.indexOf('=');
+    if (separatorIndex <= 0) return;
+
+    const name = source.content.slice(0, separatorIndex).trim();
+    const content = source.content.slice(separatorIndex + 1).trim();
+    if (!name || !content) return;
+
+    const meta = doc.createElement('meta');
+    meta.setAttribute(name.includes(':') ? 'property' : 'name', name);
+    meta.setAttribute('content', content);
+    doc.head.append(meta);
+    source.remove();
+  });
+}
+
 /**
  * Builds all synthetic blocks in a container element.
  * @param {Element} main The container element
@@ -128,6 +145,7 @@ export function decorateMain(main) {
  */
 async function loadEager(doc) {
   document.documentElement.lang = 'en';
+  decorateCustomMetadata(doc);
   decorateTemplateAndTheme();
   const main = doc.querySelector('main');
   if (main) {

@@ -23,24 +23,12 @@
           "label": "Keywords"
         },
         {
-          "component": "container",
+          "component": "text",
+          "valueType": "string",
           "name": "customMetadata",
           "label": "Custom Metadata",
           "multi": true,
-          "fields": [
-            {
-              "component": "text",
-              "valueType": "string",
-              "name": "name",
-              "label": "Name"
-            },
-            {
-              "component": "text",
-              "valueType": "string",
-              "name": "value",
-              "label": "Value"
-            }
-          ]
+          "description": "Enter one meta tag per item as name=value, for example robots=noindex"
         }
       ]
     }
