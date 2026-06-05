@@ -21,6 +21,26 @@
           "name": "keywords",
           "multi": true,
           "label": "Keywords"
+        },
+        {
+          "component": "container",
+          "name": "customMetadata",
+          "label": "Custom Metadata",
+          "multi": true,
+          "fields": [
+            {
+              "component": "text",
+              "valueType": "string",
+              "name": "name",
+              "label": "Name"
+            },
+            {
+              "component": "text",
+              "valueType": "string",
+              "name": "value",
+              "label": "Value"
+            }
+          ]
         }
       ]
     }
