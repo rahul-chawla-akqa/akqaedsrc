@@ -58,18 +58,21 @@ async function loadFonts() {
 }
 
 function decorateCustomMetadata(doc) {
-  doc.head.querySelectorAll('meta[name="customMetadata"]').forEach((source) => {
-    const separatorIndex = source.content.indexOf('=');
-    if (separatorIndex <= 0) return;
+  doc.head.querySelectorAll('meta[name="custommetadata"]').forEach((source) => {
+    const entries = source.content.split(',').map((e) => e.trim()).filter(Boolean);
+    entries.forEach((entry) => {
+      const separatorIndex = entry.indexOf('=');
+      if (separatorIndex <= 0) return;
 
-    const name = source.content.slice(0, separatorIndex).trim();
-    const content = source.content.slice(separatorIndex + 1).trim();
-    if (!name || !content) return;
+      const name = entry.slice(0, separatorIndex).trim();
+      const content = entry.slice(separatorIndex + 1).trim();
+      if (!name || !content) return;
 
-    const meta = doc.createElement('meta');
-    meta.setAttribute(name.includes(':') ? 'property' : 'name', name);
-    meta.setAttribute('content', content);
-    doc.head.append(meta);
+      const meta = doc.createElement('meta');
+      meta.setAttribute(name.includes(':') ? 'property' : 'name', name);
+      meta.setAttribute('content', content);
+      doc.head.append(meta);
+    });
     source.remove();
   });
 }
