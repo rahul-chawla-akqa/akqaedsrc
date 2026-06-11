@@ -32,6 +32,9 @@
       "id": "blocks",
       "components": [
         {
+          "...": "./_metadata.json#/definitions"
+        },
+        {
           "...": "../blocks/*/_*.json#/definitions"
         }
       ]

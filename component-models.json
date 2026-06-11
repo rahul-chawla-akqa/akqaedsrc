@@ -150,6 +150,25 @@
     ]
   },
   {
+    "id": "metadata-row-model",
+    "fields": [
+      {
+        "component": "text-input",
+        "name": "metaKey",
+        "label": "Property Key (e.g., og:type, robots)",
+        "valueType": "string",
+        "required": true
+      },
+      {
+        "component": "text-input",
+        "name": "metaValue",
+        "label": "Property Value",
+        "valueType": "string",
+        "required": true
+      }
+    ]
+  },
+  {
     "id": "card",
     "fields": [
       {

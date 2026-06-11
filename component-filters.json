@@ -16,7 +16,14 @@
       "cards",
       "columns",
       "fragment",
+      "metadata",
       "nomodel"
+    ]
+  },
+  {
+    "id": "metadata-items",
+    "components": [
+      "metadata-item"
     ]
   },
   {
