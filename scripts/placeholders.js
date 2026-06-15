@@ -11,6 +11,7 @@
  */
 
 import { toCamelCase } from './aem.js';
+import { getLocaleAndLanguage } from './scripts.js';
 
 /**
  * Gets placeholders object.
@@ -18,11 +19,13 @@ import { toCamelCase } from './aem.js';
  * @returns {object} Window placeholders object
  */
 // eslint-disable-next-line import/prefer-default-export
-export async function fetchPlaceholders(prefix = 'default') {
+export async function fetchPlaceholders(prefix = '') {
+  const { locale, language } = getLocaleAndLanguage();
+  const localePrefix = locale && language ? `/${locale}/${language}` : '';
   window.placeholders = window.placeholders || {};
   if (!window.placeholders[prefix]) {
     window.placeholders[prefix] = new Promise((resolve) => {
-      fetch(`${prefix === 'default' ? '' : prefix}/placeholders.json`)
+      fetch(`${prefix === '' ? localePrefix : `${localePrefix}/${prefix}`}/placeholders.json`)
         .then((resp) => {
           if (resp.ok) {
             return resp.json();

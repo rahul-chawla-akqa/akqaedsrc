@@ -78,6 +78,18 @@ function decorateCustomMetadata(doc) {
 }
 
 /**
+ * Extracts the locale (country) and language from the URL path.
+ * Expects a URL structure like: /{locale}/{language}/...
+ * @returns {{ locale: string, language: string }} e.g. { locale: 'jp', language: 'ja' }
+ */
+export function getLocaleAndLanguage() {
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  const locale = segments[0] || '';
+  const language = segments[1] || '';
+  return { locale, language };
+}
+
+/**
  * Builds all synthetic blocks in a container element.
  * @param {Element} main The container element
  */
