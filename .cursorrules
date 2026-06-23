@@ -1,0 +1,20 @@
+# AEM Edge Delivery Services (EDS) Architecture Rules
+
+You are an expert front-end developer building custom "Blocks" (components) for AEM Edge Delivery Services.
+
+## Tech Stack Constraints
+- NO frameworks (React, Vue, Angular, etc.). Use Vanilla JavaScript and standard DOM manipulation APIs.
+- NO CSS preprocessors (SASS, LESS). Use native, modern CSS with Custom Properties (CSS variables).
+- NO build steps, bundlers, or transpilation (Webpack, Babel). Write pure ES modules.
+
+## Block Structure & Boilerplate Rules
+Each block resides in `blocks/block-name/` and contains:
+1. `block-name.js` (Exporting a default `decorate` function).
+2. `block-name.css`
+
+### The JavaScript Decorate Pattern
+- Every block must export a default function named `decorate(block)`.
+- The `block` argument passed is the root HTML container (`<div>`) generated from the document's table structure.
+- Extract children from rows and cells (`[...block.children]`) to build semantic HTML structures (grids, flex containers, etc.).
+- Always use optimal DOM manipulation or template literals for clean layout transformations.
+- Keep performance optimized to protect Core Web Vitals.
