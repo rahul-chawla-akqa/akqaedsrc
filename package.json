@@ -12,7 +12,12 @@
     "build:json:models": "merge-json-cli -i \"models/_component-models.json\" -o \"component-models.json\"",
     "build:json:definitions": "merge-json-cli -i \"models/_component-definition.json\" -o \"component-definition.json\"",
     "build:json:filters": "merge-json-cli -i \"models/_component-filters.json\" -o \"component-filters.json\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "build:edge": "js-compute-runtime ./src/index.js ./bin/main.wasm",
+    "edge:serve": "aio aem edge-functions serve",
+    "edge:serve:watch": "aio aem edge-functions serve --watch",
+    "dev:proxy": "node dev-server.mjs",
+    "dev": "node dev-server.mjs & sleep 2 && aem up --url http://localhost:4000 --no-open --forward-browser-logs"
   },
   "repository": {
     "type": "git",
@@ -36,5 +41,8 @@
     "npm-run-all": "4.1.5",
     "stylelint": "17.12.0",
     "stylelint-config-standard": "40.0.0"
+  },
+  "dependencies": {
+    "@fastly/js-compute": "^3.43.1"
   }
 }

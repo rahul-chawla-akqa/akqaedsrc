@@ -1,0 +1,28 @@
+# AEM Edge Functions - Fastly Compute configuration
+# https://www.fastly.com/documentation/reference/compute/fastly-toml
+
+authors = []
+cloned_from = "https://github.com/adobe/aem-edge-functions-boilerplate"
+description = "AEM Edge Functions for akqaedsrc"
+language = "javascript"
+manifest_version = 3
+name = "akqaedsrc-edge-functions"
+service_id = ""
+
+[scripts]
+  build = "npm run build:edge"
+  post_init = "npm install"
+
+[local_server]
+  [local_server.backends]
+    [local_server.backends.jsonplaceholder]
+      url = "https://jsonplaceholder.typicode.com"
+
+    [local_server.backends.origin]
+      url = "http://127.0.0.1:3000"
+
+  [local_server.config_stores]
+    [local_server.config_stores.config_default]
+      format = "inline-toml"
+      [local_server.config_stores.config_default.contents]
+        LOG_LEVEL = "debug"

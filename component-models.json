@@ -150,6 +150,28 @@
     ]
   },
   {
+    "id": "blogs",
+    "fields": [
+      {
+        "component": "select",
+        "name": "mode",
+        "label": "Display Mode",
+        "description": "Choose how the blog content is displayed",
+        "valueType": "string",
+        "options": [
+          {
+            "name": "List",
+            "value": "list"
+          },
+          {
+            "name": "Detail",
+            "value": "detail"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "card",
     "fields": [
       {

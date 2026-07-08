@@ -1,3 +1,7 @@
 helix-importer-ui
 dompurify.min.js
 *.min.js
+src/
+bin/
+templates/
+dev-server.mjs
