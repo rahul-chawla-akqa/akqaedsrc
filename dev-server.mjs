@@ -154,60 +154,6 @@ function injectRowsIntoBlock(html, rows) {
   return html;
 }
 
-async function fetchAuthoredPage(pathname) {
-  const originURL = `${AEM_ORIGIN}${pathname}`;
-  try {
-    const resp = await fetch(originURL);
-    if (resp.ok) return resp.text();
-  } catch { /* origin unavailable, fall through to local drafts */ }
-
-  // Fallback: read from local drafts folder
-  const normalizedPath = pathname.replace(/\/$/, '') || '/index';
-  const localFile = path.join(__dirname, 'drafts', `${normalizedPath}.plain.html`);
-  if (fs.existsSync(localFile)) {
-    return fs.readFileSync(localFile, 'utf-8');
-  }
-  // Try index.plain.html for directory paths
-  const indexFile = path.join(__dirname, 'drafts', normalizedPath, 'index.plain.html');
-  if (fs.existsSync(indexFile)) {
-    return fs.readFileSync(indexFile, 'utf-8');
-  }
-  return null;
-}
-
-async function handleBlogsList() {
-  const [pageHtml, data] = await Promise.all([
-    fetchAuthoredPage('/blogs'),
-    fetchJSON(AEM_GQL_ENDPOINT, getGqlHeaders()),
-  ]);
-
-  if (!pageHtml) return { status: 502, body: 'Error fetching authored blogs page' };
-  if (!data) return { status: 502, body: 'Error fetching blogs from AEM CF' };
-
-  const blogs = transformBlogResponse(data);
-  const rows = buildBlogRows(blogs);
-  const html = injectRowsIntoBlock(pageHtml, rows);
-  return { status: 200, body: html };
-}
-
-async function handleBlogDetail(slug) {
-  const [pageHtml, data] = await Promise.all([
-    fetchAuthoredPage(`/blogs/${slug}`),
-    fetchJSON(AEM_GQL_ENDPOINT, getGqlHeaders()),
-  ]);
-
-  if (!pageHtml) return { status: 502, body: 'Error fetching authored blog detail page' };
-  if (!data) return { status: 502, body: 'Error fetching blog from AEM CF' };
-
-  const blogs = transformBlogResponse(data);
-  const blog = blogs.find((b) => b.slug === slug);
-  if (!blog) return { status: 404, body: `Blog "${slug}" not found` };
-
-  const rows = buildBlogRows([blog]);
-  const html = injectRowsIntoBlock(pageHtml, rows);
-  return { status: 200, body: html };
-}
-
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   const pathname = url.pathname.replace(/\/$/, '') || '/';
@@ -219,19 +165,24 @@ const server = http.createServer(async (req, res) => {
   } else if (pathname.match(/^\/posts\/(\d+)$/)) {
     const id = pathname.match(/^\/posts\/(\d+)$/)[1];
     result = await handlePostDetail(id);
-  } else if (pathname === '/blogs') {
-    result = await handleBlogsList();
-  } else if (pathname.match(/^\/blogs\/([a-z0-9-]+)$/i)) {
-    const slug = pathname.match(/^\/blogs\/([a-z0-9-]+)$/i)[1];
-    result = await handleBlogDetail(slug);
   } else {
     // Proxy all other requests to the AEM origin
     try {
       const originURL = `${AEM_ORIGIN}${req.url}`;
       const originResp = await fetch(originURL);
-      const body = await originResp.text();
-      const headers = { 'Content-Type': originResp.headers.get('content-type') || 'text/html' };
-      res.writeHead(originResp.status, headers);
+      let body = await originResp.text();
+      const contentType = originResp.headers.get('content-type') || 'text/html';
+
+      if (contentType.includes('html') && body.includes('<div class="blogs">')) {
+        const data = await fetchJSON(AEM_GQL_ENDPOINT, getGqlHeaders());
+        if (data) {
+          const blogs = transformBlogResponse(data);
+          const rows = buildBlogRows(blogs);
+          body = injectRowsIntoBlock(body, rows);
+        }
+      }
+
+      res.writeHead(originResp.status, { 'Content-Type': contentType });
       res.end(body);
     } catch (e) {
       res.writeHead(502, { 'Content-Type': 'text/plain' });

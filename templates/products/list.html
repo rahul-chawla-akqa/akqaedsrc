@@ -1,7 +1,8 @@
 <html>
 <head>
-  <title>Blogs</title>
+  <title>Products</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="description" content="Browse all products"/>
   <script src="/scripts/aem.js" type="module"></script>
   <script src="/scripts/scripts.js" type="module"></script>
   <link rel="stylesheet" href="/styles/styles.css"/>
@@ -10,19 +11,18 @@
   <header></header>
   <main>
     <div>
-      <h1>Blogs</h1>
-      <div class="blogs">
+      <h1>Products</h1>
+      <div class="product-details">
         <div>
           <div>list</div>
         </div>
-        {{#blogs}}
+        {{#products}}
         <div>
-          <div>{{slug}}</div>
+          <div>{{id}}</div>
           <div>{{title}}</div>
-          <div>{{{description}}}</div>
-          <div><img src="{{image}}" alt="{{title}}"/></div>
+          <div>{{description}}</div>
         </div>
-        {{/blogs}}
+        {{/products}}
       </div>
     </div>
   </main>
