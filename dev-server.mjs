@@ -16,7 +16,7 @@ if (fs.existsSync(envFile)) {
 
 const PORT = 4000;
 const API_BASE = 'https://jsonplaceholder.typicode.com';
-const AEM_GQL_ENDPOINT = 'https://author-p104103-e1884364.adobeaemcloud.com/graphql/execute.json/blog-store/blogpagelist';
+const AEM_CF_ASSETS_BASE = 'https://author-p104103-e1884364.adobeaemcloud.com/api/assets/akqaedsrc/blogs';
 const AEM_TOKEN = process.env.AEM_TOKEN || '';
 const AEM_ORIGIN = 'https://main--akqaedsrc--rahul-chawla-akqa.aem.page';
 
@@ -28,14 +28,21 @@ function loadTemplate(templatePath) {
 /**
  * Minimal Mustache-style renderer supporting {{var}} and {{#arr}}...{{/arr}}
  */
+function getByPath(data, key) {
+  if (!key.includes('.')) return data[key];
+  return key.split('.').reduce((acc, part) => (
+    acc !== undefined && acc !== null ? acc[part] : undefined
+  ), data);
+}
+
 function render(template, data) {
   let output = template;
 
   // Section blocks: {{#key}}...{{/key}}
   output = output.replace(
-    /\{\{#(\w+)\}\}([\s\S]*?)\{\{\/\1\}\}/g,
+    /\{\{#([\w.]+)\}\}([\s\S]*?)\{\{\/\1\}\}/g,
     (_, key, inner) => {
-      const value = data[key];
+      const value = getByPath(data, key);
       if (Array.isArray(value)) {
         return value.map((item) => render(inner, item)).join('');
       }
@@ -45,15 +52,15 @@ function render(template, data) {
   );
 
   // Unescaped variable substitution: {{{key}}} (raw HTML)
-  output = output.replace(/\{\{\{(\w+)\}\}\}/g, (_, key) => {
-    const val = data[key];
-    return val !== undefined ? String(val) : '';
+  output = output.replace(/\{\{\{([\w.]+)\}\}\}/g, (_, key) => {
+    const val = getByPath(data, key);
+    return val !== undefined && val !== null ? String(val) : '';
   });
 
   // Variable substitution: {{key}} (HTML-escaped)
-  output = output.replace(/\{\{(\w+)\}\}/g, (_, key) => {
-    const val = data[key];
-    if (val === undefined) return '';
+  output = output.replace(/\{\{([\w.]+)\}\}/g, (_, key) => {
+    const val = getByPath(data, key);
+    if (val === undefined || val === null) return '';
     return String(val)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -70,23 +77,13 @@ async function fetchJSON(url, headers = {}) {
   return resp.json();
 }
 
-function transformBlogResponse(data) {
-  const items = data?.data?.pageModelList?.items?.[0];
-  if (!items) return [];
-  const allBlogs = [];
-  (items.main || []).forEach((section) => {
-    (section.rows || []).forEach((row) => {
-      (row.bloglist || []).forEach((blog) => {
-        allBlogs.push({
-          slug: blog._path.split('/').pop(),
-          title: blog.title,
-          description: blog.desc?.html || '',
-          image: blog.asset?._path || '',
-        });
-      });
-    });
-  });
-  return [...new Map(allBlogs.map((b) => [b.slug, b])).values()];
+async function handleBlogDetail(slug) {
+  const data = await fetchJSON(`${AEM_CF_ASSETS_BASE}/${slug}.json`, getGqlHeaders());
+  if (!data) return { status: 404, body: `Blog "${slug}" not found` };
+
+  const template = loadTemplate('cf-templates/blogs.html');
+  const html = render(template, data);
+  return { status: 200, body: html };
 }
 
 async function handlePostsList() {
@@ -113,47 +110,6 @@ function getGqlHeaders() {
   return headers;
 }
 
-function buildBlogRows(blogs) {
-  return blogs.map((blog) => `
-        <div>
-          <div>${blog.slug}</div>
-          <div>${blog.title}</div>
-          <div>${blog.description}</div>
-          <div><img src="${blog.image}" alt="${blog.title}"/></div>
-        </div>`).join('');
-}
-
-function injectRowsIntoBlock(html, rows) {
-  const blockStart = html.indexOf('<div class="blogs">');
-  if (blockStart === -1) return html;
-
-  // Find the first child <div> (mode row) inside .blogs
-  const contentStart = blockStart + '<div class="blogs">'.length;
-  const firstChildStart = html.indexOf('<div>', contentStart);
-  if (firstChildStart === -1) return html;
-
-  // Walk through the mode row's nested divs to find its closing </div>
-  let depth = 0;
-  let i = firstChildStart;
-  while (i < html.length) {
-    if (html.startsWith('<div', i)) {
-      depth += 1;
-      i = html.indexOf('>', i) + 1;
-    } else if (html.startsWith('</div>', i)) {
-      depth -= 1;
-      if (depth === 0) {
-        const insertPos = i + '</div>'.length;
-        return html.slice(0, insertPos) + rows + html.slice(insertPos);
-      }
-      i += '</div>'.length;
-    } else {
-      i += 1;
-    }
-  }
-
-  return html;
-}
-
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   const pathname = url.pathname.replace(/\/$/, '') || '/';
@@ -165,6 +121,9 @@ const server = http.createServer(async (req, res) => {
   } else if (pathname.match(/^\/posts\/(\d+)$/)) {
     const id = pathname.match(/^\/posts\/(\d+)$/)[1];
     result = await handlePostDetail(id);
+  } else if (pathname.match(/^\/blogs\/([a-z0-9-]+)$/i)) {
+    const slug = pathname.match(/^\/blogs\/([a-z0-9-]+)$/i)[1];
+    result = await handleBlogDetail(slug);
   } else {
     // Proxy all other requests to the AEM origin
     try {
@@ -172,15 +131,6 @@ const server = http.createServer(async (req, res) => {
       const originResp = await fetch(originURL);
       let body = await originResp.text();
       const contentType = originResp.headers.get('content-type') || 'text/html';
-
-      if (contentType.includes('html') && body.includes('<div class="blogs">')) {
-        const data = await fetchJSON(AEM_GQL_ENDPOINT, getGqlHeaders());
-        if (data) {
-          const blogs = transformBlogResponse(data);
-          const rows = buildBlogRows(blogs);
-          body = injectRowsIntoBlock(body, rows);
-        }
-      }
 
       res.writeHead(originResp.status, { 'Content-Type': contentType });
       res.end(body);

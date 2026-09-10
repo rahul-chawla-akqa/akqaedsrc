@@ -70,22 +70,15 @@ This fetches live data from jsonplaceholder and renders using the same templates
 
 ## Blogs (AEM Content Fragments)
 
-The `/blogs` routes use AEM Content Fragment data fetched from a GraphQL persisted query,
-rendered server-side into EDS block markup.
+Blog posts use the **Blogs** content fragment model (`/conf/akqaedsrc/settings/dam/cfm/models/blogs`)
+with fields `title`, `description`, and `imageReference`. Fragments under
+`/content/dam/akqaedsrc/blogs/` publish to `/blogs/{fragment-name}` and are editable in the
+Universal Editor (changes persist to the fragment).
 
-### Endpoint
-
-```
-https://author-p104103-e1884364.adobeaemcloud.com/graphql/execute.json/blog-store/blogpagelist
-```
-
-> **Production recommendation**: Use the AEM Publish tier
-> (`publish-p104103-e1884364.adobeaemcloud.com`) where persisted queries are publicly
-> accessible without auth. This eliminates token management in the JSON2HTML worker.
+Path mapping and overlay allow-list live in `paths.json` and `xwalk.json`. Sync the same
+`content-fragment-overlay` block to Configuration Service `public.json` if you use the admin API.
 
 ### JSON2HTML Configuration for Blogs
-
-Add the following entries to the JSON2HTML config POST (alongside the existing `/posts` entries):
 
 ```bash
 curl -X POST \
@@ -95,22 +88,19 @@ curl -X POST \
   -d '[
     {
       "path": "/blogs/",
-      "endpoint": "https://publish-p104103-e1884364.adobeaemcloud.com/graphql/execute.json/blog-store/blogpagelist",
-      "template": "/templates/blogs/list.html"
-    },
-    {
-      "path": "/blogs/",
-      "endpoint": "https://publish-p104103-e1884364.adobeaemcloud.com/graphql/execute.json/blog-store/blogpagelist",
-      "regex": "/[a-z0-9-]+$/",
-      "template": "/templates/blogs/detail.html"
+      "endpoint": "https://author-p104103-e1884364.adobeaemcloud.com/api/assets/akqaedsrc/blogs/{{id}}.json",
+      "regex": "/(?<=\\/blogs\\/)(.+)$/",
+      "template": "/cf-templates/blogs.html",
+      "relativeURLPrefix": "https://publish-p104103-e1884364.adobeaemcloud.com",
+      "headers": { "Accept": "application/json" },
+      "forwardHeaders": ["Authorization"]
     }
   ]'
 ```
 
 ### Preview
 
-- List: `https://main--akqaedsrc--rahul-chawla-akqa.aem.page/blogs`
-- Detail: `https://main--akqaedsrc--rahul-chawla-akqa.aem.page/blogs/blog-1`
+- Example: `https://main--akqaedsrc--rahul-chawla-akqa.aem.page/blogs/nav`
 
 ### Local Development
 
@@ -125,8 +115,8 @@ export AEM_TOKEN=<your-dev-token>
 npm run dev
 ```
 
-The dev proxy fetches from the AEM Author GraphQL endpoint, flattens the nested CF response,
-and renders using the Mustache templates at `templates/blogs/`.
+The dev proxy can render a fragment from the AEM Assets API using `cf-templates/blogs.html`
+when `AEM_TOKEN` is set (see `dev-server.mjs`).
 
 > **Note**: AEM Developer Tokens are short-lived. Regenerate from AEM Developer Console
 > when they expire.

@@ -153,21 +153,23 @@
     "id": "blogs",
     "fields": [
       {
-        "component": "select",
-        "name": "mode",
-        "label": "Display Mode",
-        "description": "Choose how the blog content is displayed",
+        "component": "text",
         "valueType": "string",
-        "options": [
-          {
-            "name": "List",
-            "value": "list"
-          },
-          {
-            "name": "Detail",
-            "value": "detail"
-          }
-        ]
+        "name": "title",
+        "label": "Title"
+      },
+      {
+        "component": "richtext",
+        "name": "description",
+        "label": "Description",
+        "valueType": "string"
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "imageReference",
+        "label": "Image",
+        "multi": false
       }
     ]
   },
