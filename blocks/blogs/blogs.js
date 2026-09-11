@@ -4,12 +4,13 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 /**
  * Decorates the blogs block.
  *
- * Authoring: the block stores a Content Fragment path via the
- * aem-content-fragment picker; Universal Editor persists field edits
- * back to the CF at /content/dam/akqaedsrc/blogs/*.
- *
- * Delivery: the edge function resolves that CF into rows before this runs:
+ * Content source: an AEM "Blogs" Content Fragment. At publish time the
+ * json2html overlay renders the CF into this block's rows via
+ * cf-templates/blogs.html (SSG), so the fields arrive as static HTML:
  *   [title], [description (richtext)], [image]
+ *
+ * Authoring: Universal Editor edits the CF fields and persists them
+ * back to the Content Fragment (see the xwalk.cf plugin in _blogs.json).
  *
  * @param {Element} block The block element
  */

@@ -5,6 +5,17 @@
       "id": "blogs",
       "plugins": {
         "xwalk": {
+          "cf": {
+            "name": "Blog Post",
+            "cfModel": "Blogs",
+            "cfFolder": "blogs",
+            "title": "Blog Post",
+            "description": "A blog post content fragment",
+            "template": {
+              "name": "Blogs",
+              "model": "blogs"
+            }
+          },
           "page": {
             "resourceType": "core/franklin/components/block/v1/block",
             "template": {
@@ -21,13 +32,23 @@
       "id": "blogs",
       "fields": [
         {
-          "component": "aem-content-fragment",
-          "name": "blog",
-          "label": "Blog Content Fragment",
+          "component": "text",
           "valueType": "string",
-          "validation": {
-            "rootPath": "/content/dam/akqaedsrc/blogs"
-          }
+          "name": "title",
+          "label": "Title"
+        },
+        {
+          "component": "richtext",
+          "name": "description",
+          "label": "Description",
+          "valueType": "string"
+        },
+        {
+          "component": "reference",
+          "valueType": "string",
+          "name": "imageReference",
+          "label": "Image",
+          "multi": false
         }
       ]
     }

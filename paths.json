@@ -2,7 +2,8 @@
 {
     "mappings": [
       "/content/akqaedsrc/:/",
-      "/content/akqaedsrc/configuration:/.helix/config.json"
+      "/content/akqaedsrc/configuration:/.helix/config.json",
+      "/content/dam/akqaedsrc/blogs/:/blogs/"
     ],
     "includes": [
       "/content/akqaedsrc/",

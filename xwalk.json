@@ -3,6 +3,13 @@
     "xwalk": {
       "multi-field": {
         "enabled": true
+      },
+      "content-fragment-overlay": {
+        "/content/dam/akqaedsrc/blogs/**": {
+          "includes": [
+            "/conf/akqaedsrc/settings/dam/cfm/models/blogs"
+          ]
+        }
       }
     }
   }
